@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: LH_MailBags
+## Notes: Opens Baganator or Blizzard bags at the mailbox; optional closing.
+## Author: Local
+## Version: 1.1.1
+## OptionalDeps: Baganator
+## SavedVariables: LH_MailBagsDB
+
+LH_MailBags.lua
