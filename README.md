@@ -80,3 +80,7 @@ With WoW closed, remove `LH_MailBags` from `Interface/AddOns`. Optionally remove
 - Replaced the old chat commands with `/lh_mailbags`.
 - Translated the documentation, comments and chat messages into English.
 - Added instructions for transferring the account-wide setting.
+
+## Required core addon
+
+Install and enable **LH_Tweaks** alongside this addon. LH_Tweaks is the shared LiteHawk configuration host and must load first. CurseForge releases must list LH_Tweaks as a required dependency so the client installs it automatically.
