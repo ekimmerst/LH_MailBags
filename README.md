@@ -1,5 +1,7 @@
 <h1 style="color: #d9a94b;">LH MailBags</h1>
 
+<p>Open your Blizzard bags or Baganator automatically when you open a mailbox, with an option to close them afterward.</p>
+
 <p>One less click at the mailbox. LH MailBags opens your carried bags when you open the Blizzard mailbox, so you can get straight to sending or collecting items.</p>
 
 <h2 style="color: #73c9c4;">How it works</h2>
