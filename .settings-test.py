@@ -78,11 +78,12 @@ fire('ADDON_LOADED','LH_MailBags')
 assert(LH_MailBagsDB.enabled and not LH_MailBagsDB.closeOnHide,'Saved close preference lost')
 LH_Tweaks.category={};LH_Tweaks:RegisterModulePage('LH_MailBags')
 assert(registered.parent==LH_Tweaks.category and registered.title=='LH MailBags')
-assert(#registered.layout.rows==3 and next(buttons)==nil,'Diagnostic control still present')
-local enable,close=registry.LH_MailBags_enabled,registry.LH_MailBags_closeOnHide
-assert(enable.default and close.default and enable.get() and not close.get())
+assert(#registered.layout.rows==4 and next(buttons)==nil,'Unexpected settings controls')
+local enable,close,bank=registry.LH_MailBags_enabled,registry.LH_MailBags_closeOnHide,registry.LH_MailBags_skipBankGossip
+assert(enable.default and close.default and not bank.default and enable.get() and not close.get() and not bank.get())
 local dependent=registered.layout.rows[3]
 assert(dependent.parent==registered.layout.rows[2] and dependent.canModify())
+assert(registered.layout.rows[4].parent==registered.layout.rows[2])
 SlashCmdList.LH_MAILBAGS();assert(opened=='LH MailBags')
 -- Mail UI loading after login and repeated loading events install only one hook.
 fire('PLAYER_LOGIN');MailFrame=CreateFrame()
@@ -104,15 +105,24 @@ assert(close.get(),'Disabling destroyed the saved close preference')
 -- A pending close is canceled by disabling, too.
 enable.set(true);MailFrame:Show();drain();MailFrame:Hide();enable.set(false);drain()
 assert(bagOpen() and closes==1,'Pending close survived disabling')
--- Native defaults restore both proxies and preserve other module settings.
-LH_JobsDoneDB={enabled=false};enable.set(enable.default);close.set(close.default)
-assert(enable.get() and close.get() and not LH_JobsDoneDB.enabled)
+-- Native defaults restore all proxies and preserve other module settings.
+LH_JobsDoneDB={enabled=false};enable.set(enable.default);close.set(close.default);bank.set(bank.default)
+assert(enable.get() and close.get() and not bank.get() and not LH_JobsDoneDB.enabled)
 MailFrame:Show();MailFrame:Hide();MailFrame:Show();previousOpens=opens;drain()
 assert(bagOpen() and opens==previousOpens+(MODE=='Blizzard' and 5 or 1),'Stale rapid-transition actions executed')
 MailFrame:Hide();drain();assert(not bagOpen())
 close.set(false);MailFrame:Show();drain()
 -- Simulate Blizzard closing bags synchronously; our deferred keep-open restores them.
 MailFrame:Hide();bags={};baganatorOpen=false;drain();assert(bagOpen())
+-- Banker gossip is selected only when enabled; the bank event opens carried bags.
+C_GossipInfo={GetOptions=function() return {{icon=132053,gossipOptionID=10},{icon=132050,gossipOptionID=20}} end,
+ SelectOption=function(id) selectedBankOption=id end}
+fire('GOSSIP_SHOW');assert(not selectedBankOption)
+bank.set(true);fire('GOSSIP_SHOW');assert(selectedBankOption==20)
+local beforeBank=opens;fire('BANKFRAME_OPENED');drain();assert(opens>beforeBank)
+fire('BANKFRAME_OPENED');beforeBank=opens;fire('BANKFRAME_CLOSED');drain()
+assert(opens==beforeBank,'Bank close did not cancel pending bag opening')
+bank.set(false);selectedBankOption=nil;fire('GOSSIP_SHOW');assert(not selectedBankOption)
 SlashCmdList.LH_MAILBAGS('status');assert(not messages[#messages]:find('Client') and not messages[#messages]:find('API:'))
 local state=enable.get();SlashCmdList.LH_MAILBAGS('off extra');assert(enable.get()==state)
 enable.set(false);close.set(false);fire('PLAYER_LOGIN')
@@ -125,7 +135,7 @@ enable.set(true);MailFrame:Show();MailFrame:Hide();MailFrame:Show();drain()
 assert(#messages==count+1,'Missing API warning was repeated')
 Baganator,OpenBag=oldBaganator,oldOpen
 ''')
-    print(f'PASS: {mode}, real host registration, both settings/defaults, saved preferences, deferred actions, cancellation, rapid transitions, late loading, removed diagnostics and missing APIs')
+    print(f'PASS: {mode}, host registration, bank and mailbox settings, saved preferences, deferred actions, cancellation, rapid transitions, late loading and missing APIs')
 
 for ext in ('png', 'tga'):
     assert (addon / f'Media/Icon.{ext}').read_bytes() == (core / f'Icon.{ext}').read_bytes()

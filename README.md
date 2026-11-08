@@ -1,8 +1,8 @@
 <h1 style="color: #d9a94b;">LH MailBags</h1>
 
-<p>Open your Blizzard bags or Baganator automatically when you open a mailbox, with an option to close them afterward.</p>
+<p>Open your Blizzard bags or Baganator automatically at the mailbox or bank, with an option to skip the banker dialogue.</p>
 
-<p>One less click at the mailbox. LH MailBags opens your carried bags when you open the Blizzard mailbox, so you can get straight to sending or collecting items.</p>
+<p>One less click at the mailbox or bank. LH MailBags opens your carried bags when you open the Blizzard mailbox. At a banker, it can select the bank option for you and open your carried bags alongside the bank.</p>
 
 <h2 style="color: #73c9c4;">How it works</h2>
 
@@ -10,11 +10,14 @@
   <li>Uses Baganator when it is installed and available; otherwise it opens Blizzard's bags.</li>
   <li>Can close your bags with the mailbox, or leave them open afterward.</li>
   <li>Lets you turn mailbox automation off without closing bags that are already open.</li>
+  <li>Optionally selects the banker dialogue and opens carried bags alongside the bank. This option is off by default.</li>
 </ul>
 
 <h2 style="color: #c78be6;">Settings</h2>
 
-<p>Open <strong>Options → AddOns → LH Tweaks → LH MailBags</strong> to enable the automation and choose what happens when the mailbox closes. Both choices are saved across your account. Baganator is optional.</p>
+<p>Open <strong>Options → AddOns → LH Tweaks → LH MailBags</strong> to enable the automation, choose what happens when the mailbox closes, and optionally skip the banker dialogue. Settings are saved across your account. Baganator is optional.</p>
+
+<p>The banker option requires <strong>Enable bag automation</strong>. You can also use <code>/lh_mailbags bank on</code> and <code>/lh_mailbags bank off</code>. The bank window opens through the game as usual; the addon opens your carried bags after it appears.</p>
 
 <h2 style="color: #73c9c4;">More LH addons</h2>
 
@@ -44,6 +47,13 @@
 <p><strong>LH Tweaks is required</strong> and must be installed alongside LH MailBags. This started as a convenience for my own characters; if it helps yours too, I'd love to hear about it. Please leave problems and suggestions in the CurseForge comments.</p>
 
 <h2 style="color: #73c9c4;">Changelog</h2>
+
+<p><strong>1.2.2 - Forever</strong></p>
+
+<ul>
+  <li>Add an optional banker dialogue skip that opens carried bags alongside the bank.</li>
+  <li>Add <code>/lh_mailbags bank on</code> and <code>/lh_mailbags bank off</code> commands.</li>
+</ul>
 
 <p><strong>1.2.1 - Forever</strong></p>
 

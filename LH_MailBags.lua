@@ -2,8 +2,10 @@ local addonName = ...
 local Addon = {}
 LH_MailBags = Addon
 local DEFAULT_CLOSE_ON_HIDE = true -- false: keep bags open after closing the mailbox
+local BANKER_GOSSIP_ICON = 132050
 local frame = CreateFrame("Frame")
 local hooked, active, serial = false, false, 0
+local bankSerial = 0
 local warned = false
 
 local function Print(text)
@@ -16,11 +18,15 @@ local function GetOptions()
     if type(LH_MailBagsDB.closeOnHide) ~= "boolean" then
         LH_MailBagsDB.closeOnHide = DEFAULT_CLOSE_ON_HIDE
     end
+    if type(LH_MailBagsDB.skipBankGossip) ~= "boolean" then
+        LH_MailBagsDB.skipBankGossip = false
+    end
     return LH_MailBagsDB
 end
 
 function Addon:IsEnabled() return GetOptions().enabled end
 function Addon:GetCloseOnHide() return GetOptions().closeOnHide end
+function Addon:GetSkipBankGossip() return GetOptions().skipBankGossip end
 
 local function BagCount()
     return NUM_TOTAL_BAG_FRAMES or (Constants and Constants.InventoryConstants
@@ -102,6 +108,7 @@ function Addon:SetEnabled(enabled)
     GetOptions().enabled = enabled
     if changed then
         serial = serial + 1 -- Cancel actions queued before this toggle.
+        bankSerial = bankSerial + 1
         active = false
         if enabled and MailFrame and MailFrame:IsShown() then
             active = true
@@ -116,9 +123,46 @@ function Addon:SetCloseOnHide(close)
     if self.RefreshSettings then self:RefreshSettings() end
 end
 
+function Addon:SetSkipBankGossip(skip)
+    GetOptions().skipBankGossip = skip == true
+    bankSerial = bankSerial + 1 -- Cancel a bank opening queued before this toggle.
+    if self.RefreshSettings then self:RefreshSettings() end
+end
+
+local function SelectBankerGossip()
+    if not Addon:IsEnabled() or not Addon:GetSkipBankGossip() then return end
+    if not (C_GossipInfo and type(C_GossipInfo.GetOptions) == "function"
+        and type(C_GossipInfo.SelectOption) == "function") then return end
+
+    local options = C_GossipInfo.GetOptions()
+    if not options then return end
+    for _, option in ipairs(options) do
+        if option.icon == BANKER_GOSSIP_ICON and option.gossipOptionID then
+            C_GossipInfo.SelectOption(option.gossipOptionID)
+            return
+        end
+    end
+end
+
+local function OpenBagsAtBank()
+    bankSerial = bankSerial + 1
+    local ticket = bankSerial
+    if not Addon:IsEnabled() or not Addon:GetSkipBankGossip() or not Compatible() then return end
+    C_Timer.After(0, function()
+        if ticket == bankSerial and Addon:IsEnabled() and Addon:GetSkipBankGossip()
+            and Compatible() then OpenBags() end
+    end)
+end
+
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
+frame:RegisterEvent("GOSSIP_SHOW")
+frame:RegisterEvent("BANKFRAME_OPENED")
+frame:RegisterEvent("BANKFRAME_CLOSED")
 frame:SetScript("OnEvent", function(_, event, name)
+    if event == "GOSSIP_SHOW" then SelectBankerGossip(); return end
+    if event == "BANKFRAME_OPENED" then OpenBagsAtBank(); return end
+    if event == "BANKFRAME_CLOSED" then bankSerial = bankSerial + 1; return end
     if event == "PLAYER_LOGIN" or name == addonName then GetOptions() end
     Attach() -- Blizzard_MailFrame can be loaded on demand.
 end)
@@ -133,10 +177,14 @@ SlashCmdList.LH_MAILBAGS = function(message)
         Addon:SetCloseOnHide(command == "close on")
         Print("Close bags the next time the mailbox closes: "
             .. (GetOptions().closeOnHide and "ON" or "OFF (bags will be kept open)"))
+    elseif command == "bank on" or command == "bank off" then
+        Addon:SetSkipBankGossip(command == "bank on")
+        Print("Skip banker dialogue and open bags at the bank: "
+            .. (Addon:GetSkipBankGossip() and "ON" or "OFF"))
     elseif command == "" and Addon.category then
         Settings.OpenToCategory(Addon.category:GetID())
     else
-        Print("/lh_mailbags on | off | close on | close off. Use /lh_mailbags to open settings.")
+        Print("/lh_mailbags on | off | close on | close off | bank on | bank off. Use /lh_mailbags to open settings.")
     end
 end
 

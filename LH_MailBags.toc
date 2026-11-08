@@ -4,9 +4,9 @@
 ## Group: LH_Tweaks
 ## X-Part-Of: LH_Tweaks
 ## IconTexture: Interface\AddOns\LH_MailBags\Media\Icon
-## Notes: Opens Baganator or Blizzard bags at the mailbox; optional closing.
+## Notes: Opens Baganator or Blizzard bags at the mailbox and optionally at the bank.
 ## Author: Local
-## Version: 1.2.1
+## Version: 1.2.2
 ## OptionalDeps: Baganator
 ## SavedVariables: LH_MailBagsDB
 
